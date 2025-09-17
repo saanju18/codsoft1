@@ -1,0 +1,53 @@
+# Import necessary libraries
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler, LabelEncoder
+from sklearn.linear_model import LogisticRegression
+from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
+from sklearn.metrics import classification_report, confusion_matrix, roc_auc_score
+
+# Load the dataset (replace 'customer_churn.csv' with your dataset file)
+data = pd.read_csv('customer_churn.csv')
+
+# Display first few rows and check for missing data
+print(data.head())
+print(data.info())
+
+# Example preprocessing
+# Encode categorical variables if any
+for col in data.select_dtypes(include=['object']).columns:
+    le = LabelEncoder()
+    data[col] = le.fit_transform(data[col])
+
+# Separate features and target
+X = data.drop('Churn', axis=1)
+y = data['Churn']
+
+# Scale the features
+scaler = StandardScaler()
+X = scaler.fit_transform(X)
+
+# Split the dataset
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.3, random_state=42, stratify=y
+)
+
+# Define models
+models = {
+    'Logistic Regression': LogisticRegression(max_iter=1000),
+    'Random Forest': RandomForestClassifier(n_estimators=100),
+    'Gradient Boosting': GradientBoostingClassifier(n_estimators=100)
+}
+
+# Train and evaluate each model
+for name, model in models.items():
+    print(f"\n--- {name} ---")
+    model.fit(X_train, y_train)
+    y_pred = model.predict(X_test)
+    print("Confusion Matrix:")
+    print(confusion_matrix(y_test, y_pred))
+    print("Classification Report:")
+    print(classification_report(y_test, y_pred))
+    if hasattr(model, "predict_proba"):
+        roc_auc = roc_auc_score(y_test, model.predict_proba(X_test)[:, 1])
+        print("ROC-AUC Score:", roc_auc)
