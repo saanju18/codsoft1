@@ -1,0 +1,46 @@
+# Import necessary libraries
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LogisticRegression
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import classification_report, confusion_matrix, roc_auc_score
+from sklearn.preprocessing import StandardScaler
+
+# Load the dataset (assuming it's named 'creditcard.csv')
+data = pd.read_csv('creditcard.csv')
+
+# Check the data structure
+print(data.head())
+print(data['Class'].value_counts())
+
+# Separate features and target
+X = data.drop(['Class', 'Time'], axis=1)  # Dropping 'Time' as it might not be useful
+y = data['Class']
+
+# Scale the features (important for some algorithms)
+scaler = StandardScaler()
+X = scaler.fit_transform(X)
+
+# Split into train and test sets
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.3, random_state=42, stratify=y
+)
+
+# Create models
+models = {
+    'Logistic Regression': LogisticRegression(max_iter=1000, class_weight='balanced'),
+    'Decision Tree': DecisionTreeClassifier(class_weight='balanced'),
+    'Random Forest': RandomForestClassifier(n_estimators=100, class_weight='balanced')
+}
+
+# Train and evaluate each model
+for name, model in models.items():
+    print(f"\n--- {name} ---")
+    model.fit(X_train, y_train)
+    y_pred = model.predict(X_test)
+    print("Confusion Matrix:")
+    print(confusion_matrix(y_test, y_pred))
+    print("Classification Report:")
+    print(classification_report(y_test, y_pred))
+    print("ROC-AUC Score:", roc_auc_score(y_test, model.predict_proba(X_test)[:, 1]))
