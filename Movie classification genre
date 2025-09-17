@@ -1,0 +1,52 @@
+# Import necessary libraries
+import pandas as pd
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import classification_report, accuracy_score
+from sklearn.pipeline import Pipeline
+
+# Example dataset - you should load your actual data here
+# The dataset should have 'plot_summary' and 'genre' columns
+data = pd.DataFrame({
+    'plot_summary': [
+        'A young boy discovers he has magical powers and goes to a school for wizards.',
+        'A detective investigates a murder case in a small town.',
+        'A group of friends go on a fun road trip across the country.',
+        'An epic battle between humans and aliens threatens the fate of the world.',
+        'A romantic story of two people finding love against all odds.'
+    ],
+    'genre': [
+        'Fantasy',
+        'Mystery',
+        'Comedy',
+        'Action',
+        'Romance'
+    ]
+})
+
+# Splitting dataset into training and test sets
+X_train, X_test, y_train, y_test = train_test_split(
+    data['plot_summary'], data['genre'], test_size=0.3, random_state=42
+)
+
+# Create a pipeline combining TF-IDF and Logistic Regression
+model = Pipeline([
+    ('tfidf', TfidfVectorizer(stop_words='english', max_df=0.8, min_df=1)),
+    ('classifier', LogisticRegression(max_iter=1000))
+])
+
+# Train the model
+model.fit(X_train, y_train)
+
+# Make predictions
+y_pred = model.predict(X_test)
+
+# Evaluate the model
+print("Accuracy:", accuracy_score(y_test, y_pred))
+print("\nClassification Report:\n", classification_report(y_test, y_pred))
+
+# Example prediction
+example_plot = ["A scientist creates a machine that can predict the future."]
+predicted_genre = model.predict(example_plot)
+print("\nPredicted Genre:", predicted_genre[0])
